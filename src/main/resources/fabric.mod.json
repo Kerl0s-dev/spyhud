@@ -8,8 +8,8 @@
 		"Kerl0s"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://kerl0s-dev.github.io/",
+		"sources": "https://github.com/Kerl0s-dev/spyhud"
 	},
 	"license": "MIT",
 	"icon": "assets/spyhud/icon.png",
