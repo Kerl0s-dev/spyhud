@@ -1,6 +1,7 @@
 package com.kerlos.spyhud.config;
 
 import com.kerlos.spyhud.ZoomManager;
+import com.kerlos.spyhud.hud.anim.HudAnimationType;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -23,10 +24,10 @@ public class SpyHudConfigScreen {
     public static Screen create(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
-                .setTitle(Text.of("SpyHud Configuration"));
+                .setTitle(Text.translatable("spyhud.config.title"));
 
-        ConfigCategory zoomCategory = builder.getOrCreateCategory(Text.of("Zoom"));
-        ConfigCategory hudCategory = builder.getOrCreateCategory(Text.of("HUD"));
+        ConfigCategory zoomCategory = builder.getOrCreateCategory(Text.translatable("spyhud.category.zoom"));
+        ConfigCategory hudCategory = builder.getOrCreateCategory(Text.translatable("spyhud.category.hud"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
         // Toggle : zoom fluide
@@ -38,7 +39,8 @@ public class SpyHudConfigScreen {
 
         // Zoom
         zoomCategory.addEntry(entryBuilder
-                .startBooleanToggle(Text.of("Hold to Zoom"), holdZoom)
+                .startBooleanToggle(Text.translatable("spyhud.option.hold_to_zoom"), holdZoom)
+                        .setTooltip(Text.translatable("spyhud.tooltip.hold_to_zoom"))
                 .setSaveConsumer(newValue -> holdZoom = newValue)
                 .build());
 
@@ -49,18 +51,27 @@ public class SpyHudConfigScreen {
                 .setSaveConsumer(newValue -> showHud = newValue)
                 .build());
 
+        // Enum pour le style d'animation du HUD
+        hudCategory.addEntry(entryBuilder
+                .startEnumSelector(Text.translatable("spyhud.option.hud_animation"), HudAnimationType.class, SpyHudConfig.getAnimationType())
+                .setTooltip(Text.translatable("spyhud.tooltip.hud_animation"))
+                .setDefaultValue(HudAnimationType.FADE)
+                .setSaveConsumer(SpyHudConfig::setAnimationType)
+                .build()
+        );
+
         // Float list pour les niveaux de zoom
-        hudCategory.addEntry(
+        zoomCategory.addEntry(
                 entryBuilder.startFloatList(Text.translatable("spyhud.option.zoom_level"), SpyHudConfig.getZoomLevels())
                         .setSaveConsumer(SpyHudConfig::setZoomLevels)
                         .setDefaultValue(SpyHudConfig.getDefaultZoomLevels())
-                        .setMin(0.05f) // Valeur de zoom minimale
+                        .setMin(0.005f) // Valeur de zoom minimale
                         .setMax(0.90f) // Valeur de zoom maximale
                         .build()
         );
 
         builder.setSavingRunnable(() -> {
-            System.out.println("[Spy Hud] Configuration sauvegardée !");
+            System.out.println("[Spy Hud] Configuration saved !");
         });
 
         ZoomManager.zoomLevel = SpyHudConfig.getCurrentZoom();

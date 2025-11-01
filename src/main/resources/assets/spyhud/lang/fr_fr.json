@@ -1,17 +1,25 @@
 {
   "modmenu.nameTranslation.spyhud": "Spy Hud",
-  "modmenu.descriptionTranslation.spyhud": "Spy Hud ajoute un zoom configurable et une interface simple avec de multiples informations",
+  "modmenu.descriptionTranslation.spyhud": "Spy Hud ajoute un zoom configurable et un HUD simple et informatif.",
 
   "key.category.spyhud.title": "Spy Hud",
-  "key.spyhud.zoom": "Zoom",
-  "key.spyhud.toggle_hud": "Afficher / Cacher le HUD",
+  "key.spyhud.zoom": "Activer le Zoom",
+  "key.spyhud.toggle_hud": "Afficher / Masquer le HUD",
   "key.spyhud.zoom_in": "Zoomer",
   "key.spyhud.zoom_out": "Dézoomer",
 
-  "spyhud.config.title": "Configuration de SpyHud",
-  "spyhud.category.general": "Paramètres généraux",
-  "spyhud.option.smooth_zoom": "Zoom fluide",
-  "spyhud.option.zoom_level": "Niveau de zoom",
-  "spyhud.tooltip.zoom_level": "Règle l'intensité du zoom",
-  "spyhud.option.show_hud": "Afficher le HUD"
+  "spyhud.config.title": "Configuration Spy Hud",
+  "spyhud.category.zoom": "Paramètres de Zoom",
+  "spyhud.category.hud": "Paramètres de HUD",
+
+  "spyhud.option.smooth_zoom": "Zoom Fluide",
+  "spyhud.option.hold_to_zoom": "Maintenir pour Zoomer",
+  "spyhud.tooltip.hold_to_zoom": "Activez cette option pour zoomer uniquement en maintenant la touche de zoom.",
+
+  "spyhud.option.zoom_level": "Niveaux de Zoom",
+  "spyhud.tooltip.zoom_level": "Modifier l’intensité des niveaux de zoom disponibles.",
+
+  "spyhud.option.show_hud": "Afficher le HUD",
+  "spyhud.option.hud_animation": "Style d’Animation du HUD",
+  "spyhud.tooltip.hud_animation": "Choisissez comment le HUD apparaît et disparaît à l’écran."
 }
