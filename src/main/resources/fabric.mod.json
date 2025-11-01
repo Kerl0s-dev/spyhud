@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "spyhud",
+	"version": "${version}",
+	"name": "Spy Hud",
+	"description": "Spy Hud add a configurable zoom and a simple HUD with multiple infos",
+	"authors": [
+		"Kerl0s"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/spyhud/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"com.kerlos.spyhud.SpyHud"
+		],
+        "modmenu": [
+            "com.kerlos.spyhud.integration.SpyHudModMenu"
+        ]
+	},
+	"mixins": [
+		"spyhud.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.10",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

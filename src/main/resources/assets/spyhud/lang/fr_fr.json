@@ -1,0 +1,17 @@
+{
+  "modmenu.nameTranslation.spyhud": "Spy Hud",
+  "modmenu.descriptionTranslation.spyhud": "Spy Hud ajoute un zoom configurable et une interface simple avec de multiples informations",
+
+  "key.category.spyhud.title": "Spy Hud",
+  "key.spyhud.zoom": "Zoom",
+  "key.spyhud.toggle_hud": "Afficher / Cacher le HUD",
+  "key.spyhud.zoom_in": "Zoomer",
+  "key.spyhud.zoom_out": "Dézoomer",
+
+  "spyhud.config.title": "Configuration de SpyHud",
+  "spyhud.category.general": "Paramètres généraux",
+  "spyhud.option.smooth_zoom": "Zoom fluide",
+  "spyhud.option.zoom_level": "Niveau de zoom",
+  "spyhud.tooltip.zoom_level": "Règle l'intensité du zoom",
+  "spyhud.option.show_hud": "Afficher le HUD"
+}
