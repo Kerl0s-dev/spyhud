@@ -13,13 +13,19 @@
   "spyhud.category.hud": "HUD Settings",
 
   "spyhud.option.smooth_zoom": "Smooth Zoom",
+  "spyhud.tooltip.smooth_zoom": "Specify if the zoom is a direct FOV change or a smooth interpolation to the desired zoom value",
   "spyhud.option.hold_to_zoom": "Hold to Zoom",
   "spyhud.tooltip.hold_to_zoom": "Enable this option to zoom only while holding the zoom key.",
-
+  "spyhud.option.lerp_speed": "Lerp Speed",
+  "spyhud.tooltip.lerp_speed": "Change the zooming speed. The closer the value is to zero, the faster the zoom.",
   "spyhud.option.zoom_level": "Zoom Levels",
   "spyhud.tooltip.zoom_level": "Adjust the intensity of the available zoom levels.",
 
   "spyhud.option.show_hud": "Display HUD",
   "spyhud.option.hud_animation": "HUD Animation Style",
-  "spyhud.tooltip.hud_animation": "Choose how the HUD components appear and disappear on screen."
+  "spyhud.tooltip.hud_animation": "Choose how the HUD components appear and disappear on screen.",
+  "spyhud.option.hud_animation_speed": "HUD Animation Speed",
+  "spyhud.tooltip.hud_animation_speed": "Set the speed of the HUD Animation",
+  "spyhud.option.hud_opacity": "HUD Opacity",
+  "spyhud.tooltip.hud_opacity": "Set the opacity of the HUD"
 }

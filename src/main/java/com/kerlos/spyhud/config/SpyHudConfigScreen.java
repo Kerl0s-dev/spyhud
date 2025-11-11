@@ -2,92 +2,108 @@ package com.kerlos.spyhud.config;
 
 import com.kerlos.spyhud.ZoomManager;
 import com.kerlos.spyhud.hud.anim.HudAnimationType;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigCategory;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.api.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 public class SpyHudConfigScreen {
 
-    private static boolean zoomSmooth = true;
-    private static boolean showHud = true;
-
-
-    // Zoom
-    private static boolean holdZoom = true;
-
     public static Screen create(Screen parent) {
+        var config = SpyHudConfigManager.get(); // récupère les valeurs du JSON
+
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
-                .setTitle(Text.translatable("spyhud.config.title"));
+                .setTitle(Text.translatable("spyhud.config.title"))
+                .setSavingRunnable(() -> {
+                    SpyHudConfigManager.save();
+                    ZoomManager.lerpSpeed = config.lerp_speed; // met à jour en direct
+                    SpyHudConfig.setAnimationType(config.animationType);
+                    SpyHudConfig.setZoomLevels(config.zoomLevels);
+                    SpyHudConfig.setAnimationSpeed(config.animationSpeed / 100);
+                    SpyHudConfig.setHudOpacity(config.hudOpacity);
+                });
 
         ConfigCategory zoomCategory = builder.getOrCreateCategory(Text.translatable("spyhud.category.zoom"));
         ConfigCategory hudCategory = builder.getOrCreateCategory(Text.translatable("spyhud.category.hud"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-        // Toggle : zoom fluide
+        // 🔹 Smooth Zoom
         zoomCategory.addEntry(entryBuilder
-                .startBooleanToggle(Text.translatable("spyhud.option.smooth_zoom"), zoomSmooth)
+                .startBooleanToggle(Text.translatable("spyhud.option.smooth_zoom"), config.smoothZoom)
                 .setDefaultValue(true)
-                .setSaveConsumer(newValue -> zoomSmooth = newValue)
+                .setTooltip(Text.translatable("spyhud.tooltip.smooth_zoom"))
+                .setSaveConsumer(val -> config.smoothZoom = val)
                 .build());
 
-        // Zoom
+        // 🔹 Lerp Speed
         zoomCategory.addEntry(entryBuilder
-                .startBooleanToggle(Text.translatable("spyhud.option.hold_to_zoom"), holdZoom)
-                        .setTooltip(Text.translatable("spyhud.tooltip.hold_to_zoom"))
-                .setSaveConsumer(newValue -> holdZoom = newValue)
+                .startFloatField(Text.translatable("spyhud.option.lerp_speed"), config.lerp_speed)
+                .setMin(0.02f)
+                .setMax(10f)
+                .setTooltip(Text.translatable("spyhud.tooltip.lerp_speed"))
+                .setSaveConsumer(val -> config.lerp_speed = val)
                 .build());
 
-        // ✅ Toggle : afficher le HUD
+        // 🔹 Hold to Zoom
+        zoomCategory.addEntry(entryBuilder
+                .startBooleanToggle(Text.translatable("spyhud.option.hold_to_zoom"), config.holdToZoom)
+                .setTooltip(Text.translatable("spyhud.tooltip.hold_to_zoom"))
+                .setSaveConsumer(val -> config.holdToZoom = val)
+                .build());
+
+        // 🔹 Liste des niveaux de zoom
+        zoomCategory.addEntry(entryBuilder
+                .startFloatList(Text.translatable("spyhud.option.zoom_level"), config.zoomLevels)
+                .setTooltip(Text.translatable("spyhud.tooltip.zoom_level"))
+                .setSaveConsumer(list -> config.zoomLevels = list.stream().toList())
+                .setDefaultValue(SpyHudConfig.getDefaultZoomLevels())
+                .setMin(0.05f)
+                .setMax(10.0f)
+                .build());
+
+        // 🔹 HUD visible ?
         hudCategory.addEntry(entryBuilder
-                .startBooleanToggle(Text.translatable("spyhud.option.show_hud"), showHud)
+                .startBooleanToggle(Text.translatable("spyhud.option.show_hud"), config.showHud)
                 .setDefaultValue(true)
-                .setSaveConsumer(newValue -> showHud = newValue)
+                .setSaveConsumer(val -> config.showHud = val)
                 .build());
 
-        // Enum pour le style d'animation du HUD
+        // 🔹 Type d’animation
         hudCategory.addEntry(entryBuilder
-                .startEnumSelector(Text.translatable("spyhud.option.hud_animation"), HudAnimationType.class, SpyHudConfig.getAnimationType())
+                .startEnumSelector(Text.translatable("spyhud.option.hud_animation"), HudAnimationType.class, config.animationType)
                 .setTooltip(Text.translatable("spyhud.tooltip.hud_animation"))
                 .setDefaultValue(HudAnimationType.FADE)
-                .setSaveConsumer(SpyHudConfig::setAnimationType)
-                .build()
-        );
+                .setSaveConsumer(val -> config.animationType = val)
+                .build());
 
-        // Float list pour les niveaux de zoom
-        zoomCategory.addEntry(
-                entryBuilder.startFloatList(Text.translatable("spyhud.option.zoom_level"), SpyHudConfig.getZoomLevels())
-                        .setSaveConsumer(SpyHudConfig::setZoomLevels)
-                        .setDefaultValue(SpyHudConfig.getDefaultZoomLevels())
-                        .setMin(0.005f) // Valeur de zoom minimale
-                        .setMax(0.90f) // Valeur de zoom maximale
-                        .build()
-        );
+        hudCategory.addEntry(entryBuilder
+                .startFloatField(Text.translatable("spyhud.option.hud_animation_speed"), config.animationSpeed)
+                .setTooltip(Text.translatable("spyhud.tooltip.hud_animation_speed"))
+                .setMin(1.0f)
+                .setMax(10.0f)
+                .setDefaultValue(10.0f)
+                .setSaveConsumer(val -> config.animationSpeed = val)
+                .build());
 
-        builder.setSavingRunnable(() -> {
-            System.out.println("[Spy Hud] Configuration saved !");
-        });
-
-        ZoomManager.zoomLevel = SpyHudConfig.getCurrentZoom();
+        hudCategory.addEntry(entryBuilder
+                .startFloatField(Text.translatable("spyhud.option.hud_opacity"), config.hudOpacity)
+                .setTooltip(Text.translatable("spyhud.tooltip.hud_opacity"))
+                .setMin(0.0f)
+                .setMax(1.0f)
+                .setDefaultValue(1.0f)
+                .setSaveConsumer(val -> config.hudOpacity = val)
+                .build());
 
         return builder.build();
     }
 
-    public static boolean isShowHud() { return showHud; }
-    public static boolean isZoomSmooth() { return zoomSmooth; }
-    public static float getZoomLevel() { return SpyHudConfig.getCurrentZoom(); }
+    // ⚙️ Méthodes utilitaires si tu veux encore y accéder directement ailleurs
 
-    public static boolean isHoldZoom() {
-        return holdZoom;
+    public static boolean isZoomSmooth() {
+        return SpyHudConfigManager.get().smoothZoom;
     }
 
-    public static void setHoldZoom(boolean value) {
-        holdZoom = value;
+    public static boolean isHoldZoom() {
+        return SpyHudConfigManager.get().holdToZoom;
     }
 }

@@ -48,4 +48,25 @@ public class SpyHudConfig {
     public static void setAnimationType(HudAnimationType type) {
         animationType = type;
     }
+
+    // Vitesse d'animation par défaut (0.1f = 10% par tick)
+    private static float animationSpeed = 0.1f;
+
+    public static float getAnimationSpeed() {
+        return animationSpeed;
+    }
+
+    public static void setAnimationSpeed(float speed) {
+        animationSpeed = speed;
+    }
+
+    private static float hudOpacity;
+
+    public static void setHudOpacity(float val) {
+        hudOpacity = val;
+    }
+
+    public static float getHudOpacity() {
+        return hudOpacity;
+    }
 }

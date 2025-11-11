@@ -1,11 +1,10 @@
 package com.kerlos.spyhud;
 
 import com.kerlos.spyhud.config.SpyHudConfig;
+import com.kerlos.spyhud.config.SpyHudConfigManager;
 import com.kerlos.spyhud.config.SpyHudConfigScreen;
 import com.kerlos.spyhud.hud.SpyHudRenderer;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
@@ -22,6 +21,7 @@ public class SpyHud implements ClientModInitializer {
     private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("spyhud", "title"));
     @Override
     public void onInitializeClient() {
+        SpyHudConfigManager.load();
         SpyHudRenderer.register();
 
         // Zoom
