@@ -20,7 +20,6 @@ public class SpyHudConfigScreen {
                     SpyHudConfig.setAnimationType(config.animationType);
                     SpyHudConfig.setZoomLevels(config.zoomLevels);
                     SpyHudConfig.setAnimationSpeed(config.animationSpeed / 100);
-                    SpyHudConfig.setHudOpacity(config.hudOpacity);
                 });
 
         ConfigCategory zoomCategory = builder.getOrCreateCategory(Text.translatable("spyhud.category.zoom"));
@@ -81,17 +80,8 @@ public class SpyHudConfigScreen {
                 .setTooltip(Text.translatable("spyhud.tooltip.hud_animation_speed"))
                 .setMin(1.0f)
                 .setMax(10.0f)
-                .setDefaultValue(10.0f)
+                .setDefaultValue(10)
                 .setSaveConsumer(val -> config.animationSpeed = val)
-                .build());
-
-        hudCategory.addEntry(entryBuilder
-                .startFloatField(Text.translatable("spyhud.option.hud_opacity"), config.hudOpacity)
-                .setTooltip(Text.translatable("spyhud.tooltip.hud_opacity"))
-                .setMin(0.0f)
-                .setMax(1.0f)
-                .setDefaultValue(1.0f)
-                .setSaveConsumer(val -> config.hudOpacity = val)
                 .build());
 
         return builder.build();

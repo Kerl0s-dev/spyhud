@@ -64,9 +64,8 @@ public class SpyHudRenderer implements HudElementRegistry {
         matrices.scale(animState.scale, animState.scale);
 
         // Met à jour l’opacité selon l’animation
-        float opacity = SpyHudConfig.getHudOpacity();
-        color = ((int)(animState.alpha * opacity * 255) << 24) | 0xFFFFFF;
-        bgColor = ((int)(animState.alpha * opacity * 128) << 24);
+        color = ((int)(animState.alpha * 255) << 24) | 0xFFFFFF;
+        bgColor = ((int)(animState.alpha * 128) << 24);
 
         // Rendu des deux panneaux HUD
         renderPlayerInfo(drawContext, tr, bgColor, color);

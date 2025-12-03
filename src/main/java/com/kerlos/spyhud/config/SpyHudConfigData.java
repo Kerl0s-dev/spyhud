@@ -12,7 +12,6 @@ public class SpyHudConfigData {
     public float lerp_speed = 0.25f;
     public HudAnimationType animationType = HudAnimationType.NONE;
     public float animationSpeed = 10.0f;
-    public float hudOpacity = 1.0f;
 
     // Tu peux aussi ajouter d’autres champs : couleur du HUD, position, etc.
 }

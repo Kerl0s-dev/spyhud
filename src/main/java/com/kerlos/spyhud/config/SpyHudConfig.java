@@ -15,10 +15,6 @@ public class SpyHudConfig {
     private static List<Float> zoomLevels = new ArrayList<>(List.of(0.66f, 0.5f, 0.33f, 0.25f, 0.2f));
     private static int currentZoomIndex = 0;
 
-    public static List<Float> getZoomLevels() {
-        return zoomLevels;
-    }
-
     public static List<Float> getDefaultZoomLevels() {
         return defaultZoomLevels;
     }
@@ -58,15 +54,5 @@ public class SpyHudConfig {
 
     public static void setAnimationSpeed(float speed) {
         animationSpeed = speed;
-    }
-
-    private static float hudOpacity;
-
-    public static void setHudOpacity(float val) {
-        hudOpacity = val;
-    }
-
-    public static float getHudOpacity() {
-        return hudOpacity;
     }
 }
