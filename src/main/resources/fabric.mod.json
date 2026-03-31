@@ -17,10 +17,7 @@
 	"entrypoints": {
 		"client": [
 			"com.kerlos.spyhud.SpyHud"
-		],
-        "modmenu": [
-            "com.kerlos.spyhud.integration.SpyHudModMenu"
-        ]
+		]
 	},
 	"mixins": [
 		"spyhud.mixins.json"
