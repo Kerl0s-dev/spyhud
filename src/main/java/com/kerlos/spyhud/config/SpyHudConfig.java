@@ -1,58 +1,85 @@
-// SpyHudConfig.java
 package com.kerlos.spyhud.config;
 
-import com.kerlos.spyhud.hud.anim.HudAnimationType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.kerlos.spyhud.hud.SpyHudRenderer;
+import net.fabricmc.loader.api.FabricLoader;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SpyHudConfig {
 
-    private static HudAnimationType animationType = HudAnimationType.FADE;
+    private static final Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .create();
 
-    private final static List<Float> defaultZoomLevels = new ArrayList<>(List.of(0.66f, 0.5f, 0.33f, 0.25f, 0.2f));
+    private static final File CONFIG_FILE =
+            FabricLoader.getInstance()
+                    .getConfigDir()
+                    .resolve("spyhud.json")
+                    .toFile();
 
-    private static List<Float> zoomLevels = new ArrayList<>(List.of(0.66f, 0.5f, 0.33f, 0.25f, 0.2f));
-    private static int currentZoomIndex = 0;
+    public static SpyHudConfig INSTANCE = new SpyHudConfig();
 
-    public static List<Float> getDefaultZoomLevels() {
-        return defaultZoomLevels;
-    }
+    public boolean smoothZoom = true;
+    public boolean holdToZoom = false;
+    public boolean showHud = true;
 
-    public static void setZoomLevels(List<Float> newLevels) {
-        zoomLevels = new ArrayList<>(newLevels);
-        if (currentZoomIndex >= zoomLevels.size()) currentZoomIndex = zoomLevels.size() - 1;
-        if (currentZoomIndex < 0) currentZoomIndex = 0;
-    }
+    public List<Float> zoomLevels =
+            new ArrayList<>(List.of(0.66f, 0.5f, 0.33f, 0.25f, 0.2f));
 
-    public static float getCurrentZoom() {
+    public float lerpSpeed = 0.25f;
+    public SpyHudRenderer.HudAnimationType animationType = SpyHudRenderer.HudAnimationType.SLIDE_UP;
+    public float animationSpeed = 0.1f;
+
+    private int currentZoomIndex = 0;
+
+    public float getCurrentZoom() {
         return zoomLevels.get(currentZoomIndex);
     }
 
-    public static void nextZoom() {
+    public void nextZoom() {
         currentZoomIndex = (currentZoomIndex + 1) % zoomLevels.size();
     }
 
-    public static void prevZoom() {
+    public void prevZoom() {
         currentZoomIndex = (currentZoomIndex - 1 + zoomLevels.size()) % zoomLevels.size();
     }
 
-    public static HudAnimationType getAnimationType() {
-        return animationType;
+    public static void load() {
+        if (!CONFIG_FILE.exists()) {
+            save();
+            return;
+        }
+
+        try (Reader reader = new InputStreamReader(
+                new FileInputStream(CONFIG_FILE),
+                StandardCharsets.UTF_8
+        )) {
+            INSTANCE = GSON.fromJson(reader, SpyHudConfig.class);
+
+            if (INSTANCE == null) {
+                INSTANCE = new SpyHudConfig();
+            }
+
+        } catch (Exception e) {
+            System.err.println("[SpyHud] Failed to load config.");
+            INSTANCE = new SpyHudConfig();
+        }
     }
 
-    public static void setAnimationType(HudAnimationType type) {
-        animationType = type;
-    }
+    public static void save() {
+        try (Writer writer = new OutputStreamWriter(
+                new FileOutputStream(CONFIG_FILE),
+                StandardCharsets.UTF_8
+        )) {
+            GSON.toJson(INSTANCE, writer);
 
-    // Vitesse d'animation par défaut (0.1f = 10% par tick)
-    private static float animationSpeed = 0.1f;
-
-    public static float getAnimationSpeed() {
-        return animationSpeed;
-    }
-
-    public static void setAnimationSpeed(float speed) {
-        animationSpeed = speed;
+        } catch (Exception e) {
+            System.err.println("[SpyHud] Failed to save config.");
+        }
     }
 }

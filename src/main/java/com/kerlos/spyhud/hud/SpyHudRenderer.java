@@ -1,7 +1,6 @@
 package com.kerlos.spyhud.hud;
 
 import com.kerlos.spyhud.config.SpyHudConfig;
-import com.kerlos.spyhud.hud.anim.HudAnimationType;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -14,179 +13,164 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
 
-import static com.kerlos.spyhud.config.SpyHudConfig.getCurrentZoom;
+import static com.kerlos.spyhud.config.SpyHudConfig.INSTANCE;
 
 public class SpyHudRenderer implements HudElementRegistry {
 
-    // =====================================================
-    // 🔧 CONFIGURATION DE BASE
-    // =====================================================
+    public enum HudAnimationType {
+        NONE("None"),
+        SLIDE_LEFT("Slide Left"),
+        SLIDE_RIGHT("Slide Right"),
+        SLIDE_UP("Slide Up"),
+        SLIDE_DOWN("Slide Down"),
+        POP_IN("Pop In"),
+        POP_OUT("Pop Out"),
+        BOUNCE_IN("Bounce In"),
+        SHAKE("Shake");
+
+        private final String label;
+
+        HudAnimationType(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
     private static final MinecraftClient mc = MinecraftClient.getInstance();
     private static final Identifier SPYHUD_ID = Identifier.of("spyhud", "hud_element");
 
     public static boolean hudShown = true;
     private static float animProgress = 0f;
 
-    // =====================================================
-    // 🧩 REGISTRATION
-    // =====================================================
     public static void register() {
         HudElementRegistry.addFirst(SPYHUD_ID, SpyHudRenderer::render);
     }
 
-    // =====================================================
-    // 🎨 RENDER LOOP
-    // =====================================================
     private static void render(DrawContext drawContext, RenderTickCounter tickCounter) {
         if (mc.player == null || mc.world == null) return;
 
-        // Animation progression
-        float target = hudShown ? 1f : 0f;
-        animProgress += (target - animProgress) * 0.1f;
+        // Progression animation
+        animProgress = updateAnimProgress(animProgress, hudShown, SpyHudConfig.INSTANCE.animationSpeed);
 
         var matrices = drawContext.getMatrices();
         var tr = mc.textRenderer;
         int screenWidth = mc.getWindow().getScaledWidth();
 
-        // Couleurs de base
-        int color;
-        int bgColor;
+        AnimationState animState = computeAnimation(SpyHudConfig.INSTANCE.animationType, animProgress);
 
-        // Récupère le type d’animation depuis la config
-        HudAnimationType anim = SpyHudConfig.getAnimationType();
-
-        // Applique les paramètres d’animation
-        AnimationState animState = computeAnimation(anim);
-
-        // Applique les transformations graphiques
         matrices.pushMatrix();
         matrices.translate(animState.offsetX, animState.offsetY);
         matrices.scale(animState.scale, animState.scale);
 
-        // Met à jour l’opacité selon l’animation
-        color = ((int)(animState.alpha * 255) << 24) | 0xFFFFFF;
-        bgColor = ((int)(animState.alpha * 128) << 24);
+        int color = withAlpha(0xFFFFFF, animState.alpha);
+        int bgColor = withAlpha(0x000000, animState.alpha * 0.5f);
 
-        // Rendu des deux panneaux HUD
         renderPlayerInfo(drawContext, tr, bgColor, color);
         renderBlockInfo(drawContext, tr, bgColor, color, screenWidth);
 
         matrices.popMatrix();
     }
 
-    // =====================================================
-    // 🌀 ANIMATION HANDLING
-    // =====================================================
-    private static AnimationState computeAnimation(HudAnimationType anim) {
-        AnimationState state = new AnimationState();
+    private static float updateAnimProgress(float progress, boolean shown, float speed) {
+        float target = shown ? 1f : 0f;
+        progress += (target - progress) * speed;
+        if (Math.abs(target - progress) < 0.001f) progress = target;
+        return progress;
+    }
 
+    private static AnimationState computeAnimation(HudAnimationType anim, float progress) {
+        AnimationState state = new AnimationState();
         switch (anim) {
             case NONE -> state.alpha = hudShown ? 1f : 0f;
-
-            case SLIDE_LEFT -> state.offsetX = (1f - animProgress) * -120;
-            case SLIDE_RIGHT -> state.offsetX = (1f - animProgress) * 120;
-            case SLIDE_UP -> state.offsetY = (1f - animProgress) * -80;
-            case SLIDE_DOWN -> state.offsetY = (1f - animProgress) * 80;
-
-            case POP_IN -> state.scale = 0.8f + (0.2f * animProgress);
-            case POP_OUT -> state.scale = 1.2f - (0.2f * animProgress);
-
+            case SLIDE_LEFT -> state.offsetX = (1f - progress) * -120;
+            case SLIDE_RIGHT -> state.offsetX = (1f - progress) * 120;
+            case SLIDE_UP -> state.offsetY = (1f - progress) * -80;
+            case SLIDE_DOWN -> state.offsetY = (1f - progress) * 80;
+            case POP_IN -> state.scale = 0.8f + 0.2f * progress;
+            case POP_OUT -> state.scale = 1.2f - 0.2f * progress;
             case BOUNCE_IN -> {
-                float t = animProgress;
-                float bounce = (float) Math.sin(t * Math.PI) * 0.2f;
-                state.scale = 0.8f + (0.2f * t) + bounce * (1f - t);
+                float bounce = (float) Math.sin(progress * Math.PI) * 0.2f;
+                state.scale = 0.8f + 0.2f * progress + bounce * (1f - progress);
             }
-
-            case SHAKE -> state.offsetX = (float)Math.sin(animProgress * 20f) * (1f - animProgress) * 5f;
+            case SHAKE -> state.offsetX = (float) Math.sin(progress * 20f) * (1f - progress) * 5f;
         }
-        // Applique un fade progressif pour toutes les animations sauf NONE
-        if (anim != HudAnimationType.NONE) {
-            state.alpha = animProgress;
-
-            // Récupère la vitesse depuis la config
-            float speed = SpyHudConfig.getAnimationSpeed();
-
-            // Animation progression avec la vitesse personnalisée
-            float target = hudShown ? 1f : 0f;
-            animProgress += (target - animProgress) * speed;
-
-            // Snap à la cible si trop proche pour éviter le micro-bug de fade
-            if (Math.abs(target - animProgress) < 0.001f) animProgress = target;
-        }
+        if (anim != HudAnimationType.NONE) state.alpha = progress;
         return state;
     }
 
-    // =====================================================
-    // 📍 RENDU DU PANNEAU GAUCHE (PLAYER INFO)
-    // =====================================================
     private static void renderPlayerInfo(DrawContext drawContext, TextRenderer tr, int bgColor, int color) {
         int baseY = 10;
         var pos = Objects.requireNonNull(mc.player).getEntityPos();
 
-        // Fond
-        drawContext.fill(5, baseY - 5, 160, baseY + 45, bgColor);
+        drawRect(drawContext, 5, baseY - 5, 160, baseY + 45, bgColor);
 
-        // Position
-        String posText = String.format("Pos §f(§c%.2f§f, §a%.2f§f, §b%.2f§f)", pos.getX(), pos.getY(), pos.getZ());
-        drawContext.drawText(tr, posText, 10, baseY, color, true);
+        drawText(drawContext, tr, String.format("Pos §f(§c%.2f§f, §a%.2f§f, §b%.2f§f)", pos.getX(), pos.getY(), pos.getZ()), 10, baseY, color);
+        drawText(drawContext, tr, "Facing §b" + mc.player.getHorizontalFacing().asString().toUpperCase(), 10, baseY + 10, color);
+        drawText(drawContext, tr, "Zoom §d" + INSTANCE.getCurrentZoom() + "x", 10, baseY + 20, color);
 
-        String dir = mc.player.getHorizontalFacing().asString().toUpperCase();
-        drawContext.drawText(tr, "Facing §b" + dir, 10, baseY + 10, color, true);
-
-        // Zoom
-        String zoomText = "Zoom §d" + getCurrentZoom() + "x";
-        drawContext.drawText(tr, zoomText, 10, baseY + 20, color, true);
-
-        // FPS
         int fps = mc.getCurrentFps();
         int max = mc.options.getMaxFps().getValue();
-
         String fpsLimit = max <= 0 || max >= 260 ? "∞" : String.valueOf(max);
         String fpsColor = (fps >= 0.9 * max) ? "§a" : (fps >= 0.6 * max) ? "§e" : "§c";
-        String fpsText = "FPS " + fpsColor + fps + "§f/§7" + fpsLimit;
-        drawContext.drawText(tr, fpsText, 10, baseY + 30, color, true);
+        drawText(drawContext, tr, "FPS " + fpsColor + fps + "§f/§7" + fpsLimit, 10, baseY + 30, color);
     }
 
-    // =====================================================
-    // 🧱 RENDU DU PANNEAU DROIT (BLOCK INFO)
-    // =====================================================
     private static void renderBlockInfo(DrawContext drawContext, TextRenderer tr, int bgColor, int color, int screenWidth) {
         int baseY = 10;
-        HitResult hit = mc.crosshairTarget;
-        String line1, line2;
+        String[] lines = getBlockInfoText();
+        int maxWidth = 0;
+        for (String line : lines) maxWidth = Math.max(maxWidth, tr.getWidth(line));
 
-        if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK) {
-            BlockPos blockPos = blockHit.getBlockPos();
-            var state = Objects.requireNonNull(mc.world).getBlockState(blockPos);
-            line1 = "Targeted Block §e" + state.getBlock().getName().getString();
-            line2 = String.format("Block Pos §f(§c%d§f, §a%d§f, §b%d§f)", blockPos.getX(), blockPos.getY(), blockPos.getZ());
-        } else {
-            line1 = "§b---------------";
-            line2 = "No block targeted";
-        }
-
-        assert mc.world != null;
-        assert mc.player != null;
-
-        var biome = mc.world.getBiome(mc.player.getBlockPos());
-        String biomeName = biome.getKey().map(k -> k.getValue().getPath()).orElse("unknown");
-        String biomeText = "Biome §a" + biomeName;
-
-        int maxWidth = Math.max(tr.getWidth(line1), Math.max(tr.getWidth(biomeText) ,tr.getWidth(line2)));
         int rectX1 = screenWidth - maxWidth - 20;
         int rectY1 = baseY - 5;
         int rectX2 = screenWidth - 5;
         int rectY2 = baseY + 35;
 
-        drawContext.fill(rectX1, rectY1, rectX2, rectY2, bgColor);
-        drawContext.drawText(tr, line1, screenWidth - tr.getWidth(line1) - 10, baseY, color, true);
-        drawContext.drawText(tr, line2, screenWidth - tr.getWidth(line2) - 10, baseY + 10, color, true);
-        drawContext.drawText(tr, biomeText, screenWidth - tr.getWidth(biomeText) - 10, baseY + 20, color, true);
+        drawRect(drawContext, rectX1, rectY1, rectX2, rectY2, bgColor);
+
+        for (int i = 0; i < lines.length; i++) {
+            drawText(drawContext, tr, lines[i], screenWidth - tr.getWidth(lines[i]) - 10, baseY + 10 * i, color);
+        }
     }
 
-    // =====================================================
-    // ⚙️ STRUCTURE INTERNE (ÉTAT D'ANIMATION)
-    // =====================================================
+    private static String[] getBlockInfoText() {
+        HitResult hit = mc.crosshairTarget;
+        String line1, line2;
+
+        if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK) {
+            BlockPos pos = blockHit.getBlockPos();
+            var state = Objects.requireNonNull(mc.world).getBlockState(pos);
+            line1 = "Targeted Block §e" + state.getBlock().getName().getString();
+            line2 = String.format("Block Pos §f(§c%d§f, §a%d§f, §b%d§f)", pos.getX(), pos.getY(), pos.getZ());
+        } else {
+            line1 = "§b---------------";
+            line2 = "No block targeted";
+        }
+
+        assert mc.world != null && mc.player != null;
+        var biome = mc.world.getBiome(mc.player.getBlockPos());
+        String biomeName = biome.getKey().map(k -> k.getValue().getPath()).orElse("unknown");
+        String biomeText = "Biome §a" + biomeName;
+
+        return new String[]{line1, line2, biomeText};
+    }
+
+    private static void drawRect(DrawContext ctx, int x1, int y1, int x2, int y2, int color) {
+        ctx.fill(x1, y1, x2, y2, color);
+    }
+
+    private static void drawText(DrawContext ctx, TextRenderer tr, String text, int x, int y, int color) {
+        ctx.drawText(tr, text, x, y, color, true);
+    }
+
+    private static int withAlpha(int baseColor, float alpha) {
+        return ((int)(alpha * 255) << 24) | (baseColor & 0xFFFFFF);
+    }
+
     private static class AnimationState {
         float offsetX = 0;
         float offsetY = 0;

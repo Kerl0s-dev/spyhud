@@ -17,7 +17,7 @@
   "spyhud.option.hold_to_zoom": "Maintenir pour Zoomer",
   "spyhud.tooltip.hold_to_zoom": "Activez cette option pour zoomer uniquement en maintenant la touche de zoom.",
   "spyhud.option.lerp_speed": "Vitesse de Lerp",
-  "spyhud.tooltip.lerp_speed": "Change la vitesse de zoom. Plus la valeur est proche de zéro, plus le zoom est rapide",
+  "spyhud.tooltip.lerp_speed": "Change la vitesse de zoom. Plus la valeur est proche de zéro, plus le zoom est lent",
   "spyhud.option.zoom_level": "Niveaux de Zoom",
   "spyhud.tooltip.zoom_level": "Modifier l’intensité des niveaux de zoom disponibles.",
 
